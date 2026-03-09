@@ -168,7 +168,8 @@ input,select,button{outline:none;font-family:inherit;-webkit-appearance:none}
 </div>
 
 <script>
-var CATS = ["hair-care","skin-care","shampoo","conditioner","body-care","hair-colour","hair-styling"];
+var CATS = ["Hair","Body","Face","Makeup","Fragrance"];
+
 var ST = {url:"",token:"",user:"",keepa:"",demo:false,all:[],fil:[],exp:null};
 
 // Build category checkboxes
@@ -176,7 +177,7 @@ var cb = document.getElementById("catboxes");
 CATS.forEach(function(c){
   var d = document.createElement("div");
   d.style.cssText = "display:flex;align-items:center;gap:6px;background:#0f1520;border:1px solid #1f2937;border-radius:8px;padding:7px 12px;cursor:pointer";
-  d.innerHTML = '<input type="checkbox" id="cb_'+c+'" checked style="cursor:pointer"><label for="cb_'+c+'" style="font-size:12px;color:#9ca3af;cursor:pointer">'+c+'</label>';
+d.innerHTML = '<input type="checkbox" id="cb_'+c+'" checked><label for="cb_'+c+'" style="font-size:12px;color:#9ca3af">'+c+'</label>';
   cb.appendChild(d);
 });
 
@@ -458,3 +459,4 @@ function toggleR(gtin){
 
 </body>
 </html>
+
