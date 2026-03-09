@@ -113,6 +113,7 @@ input,select,button{outline:none;font-family:inherit;-webkit-appearance:none}
       <div id="brandboxes" style="display:flex;flex-wrap:wrap;gap:8px"></div>
       <p style="font-size:10px;color:#374151;margin-top:6px">Leave all unchecked to scan all brands</p>
     </div>
+    <div id="keepastatus" style="background:#080b0f;border:1px solid #f59e0b33;border-radius:10px;padding:10px 16px;margin-bottom:12px"></div>
     <div id="scanstatus" style="background:#080b0f;border:1px solid #22c55e33;border-radius:10px;padding:12px 16px;margin-bottom:20px">
       <div style="display:flex;justify-content:space-between;align-items:center">
         <div>
@@ -228,6 +229,18 @@ var mc=function(m){return m>=40?"#22c55e":m>=30?"#f59e0b":"#f97316";};
 var rl=function(m){return m>=40?"🔥 HOT":m>=30?"⚡ GOOD":"✅ OK";};
 
 function goTo(v){
+  if(v==='scan'){
+    var ks=document.getElementById('keepastatus');
+    if(ks){
+      if(ST.keepa&&ST.keepa.length>5){
+        ks.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center"><div><p style="font-size:13px;font-weight:600;color:#f59e0b">🔑 Keepa Connected</p><p style="font-size:11px;color:#374151;margin-top:2px">Real Amazon prices enabled</p></div><div style="width:10px;height:10px;border-radius:50%;background:#f59e0b;box-shadow:0 0 8px #f59e0b"></div></div>';
+        ks.style.borderColor='#f59e0b55';
+      }else{
+        ks.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center"><div><p style="font-size:13px;font-weight:600;color:#374151">⚪ No Keepa Key</p><p style="font-size:11px;color:#1f2937;margin-top:2px">Using estimated 2.5x pricing</p></div></div>';
+        ks.style.borderColor='#1f293755';
+      }
+    }
+  }
   ["login","scan","results"].forEach(function(id,i){
     document.getElementById("v"+id).style.display=id===v?"block":"none";
     var el=document.getElementById("s"+i);
@@ -373,8 +386,10 @@ async function runScan(){
           products=products.concat(d.products);
           addLog("  ✓ "+item.value+": "+d.products.length+" products","success");
           apiOk=true;
+        }else if(!r.ok){
+          addLog("  ✗ "+item.value+": error "+r.status,"warn");
         }else{
-          addLog("  ⚠ "+item.value+": no products","warn");
+          addLog("  ⚠ "+item.value+": 0 products returned","warn");
         }
       }catch(e){
         addLog("  ✗ "+item.value+": "+e.message,"warn");
