@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Qogita Sourcing Tool</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Space+Grotesk:wght@600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:#070a0e;color:#e2e8f0;font-family:'DM Mono','Courier New',monospace;min-height:100vh}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:#1f2937;border-radius:2px}
+input,select,button{outline:none;font-family:inherit;-webkit-appearance:none}
+.inp{background:#0f1520;border:1px solid #1f2937;border-radius:12px;padding:13px 16px;color:#e2e8f0;font-size:16px;width:100%;transition:border-color 0.2s}
+.inp:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,0.1)}
+.btn-p{background:linear-gradient(135deg,#3b82f6,#6366f1);border:none;border-radius:12px;padding:16px 24px;color:#fff;font-size:16px;font-weight:700;cursor:pointer;width:100%}
+.btn-p:active{opacity:0.85;transform:scale(0.99)}
+.btn-p:disabled{opacity:0.35;cursor:not-allowed}
+.btn-g{background:#111827;border:1px solid #1f2937;border-radius:12px;padding:13px 18px;color:#9ca3af;font-size:14px;cursor:pointer;width:100%}
+.btn-g:active{background:#1f2937}
+.card{background:#0d1117;border:1px solid #161b22;border-radius:18px;padding:22px;margin-bottom:14px}
+.section{padding:20px 16px;max-width:560px;margin:0 auto}
+.fade{animation:fi 0.3s ease}
+@keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.spin{display:inline-block;animation:sp 0.9s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.pulse{animation:pu 1.4s infinite}
+@keyframes pu{0%,100%{opacity:1}50%{opacity:0.3}}
+.row:active,.row:hover{background:#0f1520;cursor:pointer}
+.lbl{font-size:11px;color:#6b7280;margin-bottom:7px;letter-spacing:1px;text-transform:uppercase;display:block}
+.step{flex:1;padding:7px 0;text-align:center;border-radius:8px;font-size:11px;transition:all 0.2s}
+.tbl-hdr{display:grid;grid-template-columns:1fr 75px 75px 75px 60px;gap:4px;padding:8px 12px;background:#0d1117;border-radius:8px 8px 0 0;border:1px solid #161b22;border-bottom:none}
+.tbl-row{display:grid;grid-template-columns:1fr 75px 75px 75px 60px;gap:4px;padding:10px 12px;border-bottom:1px solid #0d1117;align-items:center;transition:background 0.15s}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.stat-box{background:#0d1117;border:1px solid #161b22;border-radius:10px;padding:10px 0;text-align:center}
+.filter-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.detail-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:7px;margin-bottom:14px}
+.detail-box{background:#0a0d14;border:1px solid #111827;border-radius:9px;padding:9px 11px}
+.link-btn{display:inline-block;border-radius:9px;padding:9px 14px;font-size:12px;font-weight:600;text-decoration:none;margin:0 6px 6px 0}
+select.inp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='%236b7280'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+#log-box{background:#0a0d14;border:1px solid #111827;border-radius:12px;padding:12px 14px;margin-bottom:14px;max-height:170px;overflow-y:auto}
+.progress-bar{height:3px;background:#1f2937;border-radius:2px;overflow:hidden;margin-top:10px}
+.progress-fill{height:100%;background:linear-gradient(90deg,#3b82f6,#8b5cf6);border-radius:2px;transition:width 0.4s}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+
+<div style="padding:48px 16px 16px;background:linear-gradient(180deg,#0a0f1a,#070a0e);border-bottom:1px solid #0d1117;max-width:560px;margin:0 auto">
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+<div id="dot" style="width:7px;height:7px;border-radius:50%;background:#3b82f6;box-shadow:0 0 7px #3b82f6"></div>
+<span id="dot-label" style="font-size:10px;color:#3b82f6;letter-spacing:3px;text-transform:uppercase;font-weight:500">Beauty Sourcing</span>
+<span id="user-chip" style="display:none;margin-left:auto;font-size:11px;font-weight:600"></span>
+</div>
+<h1 style="font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;letter-spacing:-0.5px">Qogita × Amazon UK</h1>
+<p style="font-size:11px;color:#374151;margin-top:3px">Live profit finder · Per unit · FBA fees · VAT 20%</p>
+<div style="display:flex;gap:6px;margin-top:14px">
+<div class="step" id="s0" style="background:#1e3a5f;border:1px solid #3b82f6;color:#93c5fd;font-weight:600">🔐 Login</div>
+<div class="step" id="s1" style="background:#080b0f;border:1px solid #111827;color:#374151">⚙️ Settings</div>
+<div class="step" id="s2" style="background:#080b0f;border:1px solid #111827;color:#374151">📊 Leads</div>
+</div>
+</div>
+
+<!-- ═══ LOGIN ═══ -->
+
+<div id="v-login" class="section fade">
+<div class="card">
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+<div style="width:46px;height:46px;border-radius:13px;background:linear-gradient(135deg,#3b82f6,#6366f1);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">🔐</div>
+<div>
+<p style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:17px">Sign in to Qogita</p>
+<p style="font-size:11px;color:#4b5563;margin-top:2px">Uses your existing qogita.com account</p>
+</div>
+</div>
+
+```
+<!-- Backend URL -->
+<label class="lbl">Your Backend URL <span style="color:#374151;text-transform:none;letter-spacing:0">(from Railway)</span></label>
+<input class="inp" id="backend-url" placeholder="https://your-app.railway.app" style="margin-bottom:14px" type="url">
+
+<label class="lbl">Qogita Email</label>
+<input class="inp" id="inp-email" placeholder="your@email.com" type="email" autocomplete="email" autocapitalize="none" style="margin-bottom:14px">
+
+<label class="lbl">Qogita Password</label>
+<div style="position:relative;margin-bottom:16px">
+<input class="inp" id="inp-pass" placeholder="••••••••••••" type="password" autocomplete="current-password" style="padding-right:48px">
+<button onclick="togglePass()" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:18px;cursor:pointer" id="pass-eye">👁️</button>
+</div>
+
+<div style="background:#080b0f;border:1px solid #111827;border-radius:12px;padding:14px;margin-bottom:18px">
+<label class="lbl" style="margin-bottom:7px">Keepa API Key <span style="color:#374151;text-transform:none;letter-spacing:0">(optional — real Amazon prices)</span></label>
+<input class="inp" id="inp-keepa" placeholder="From keepa.com · £15/mo" type="password" style="font-size:13px">
+<p style="font-size:10px;color:#374151;margin-top:6px">Without Keepa, sell prices estimated at 2.5× buy price</p>
+</div>
+
+<div id="login-err" style="display:none;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:11px 14px;margin-bottom:14px">
+<p id="login-err-msg" style="font-size:12px;color:#f87171"></p>
+</div>
+
+<button class="btn-p" id="btn-login" onclick="doLogin()">🔐 Connect to Qogita</button>
+```
+
+</div>
+
+<div class="card" style="border-style:dashed;border-color:#1f2937">
+<p style="font-size:12px;color:#6b7280;margin-bottom:10px">💡 <b style="color:#9ca3af">No backend yet?</b> Use demo mode to preview the tool</p>
+<button class="btn-g" onclick="demoMode()">Try Demo Mode →</button>
+</div>
+
+<div class="card" style="background:#080b0f">
+<p style="font-size:12px;color:#6b7280;margin-bottom:8px">🔒 <b style="color:#9ca3af">Security</b></p>
+<p style="font-size:11px;color:#374151;line-height:1.8">
+· Password sent directly to your backend — not stored<br>
+· Token kept in browser session only<br>
+· Token disappears when you close the page<br>
+· Never use on a shared or public device
+</p>
+</div>
+</div>
+
+<!-- ═══ SCAN SETTINGS ═══ -->
+
+<div id="v-scan" class="section fade" style="display:none">
+<div class="card">
+<p style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;margin-bottom:4px">⚙️ Scan Settings</p>
+<p style="font-size:11px;color:#4b5563;margin-bottom:18px">Set your profit filters before scanning</p>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px">
+<div>
+<label class="lbl">Min Margin</label>
+<select class="inp" id="sel-margin">
+<option value="20">20%+</option><option value="25">25%+</option>
+<option value="30">30%+</option><option value="40">40%+</option>
+</select>
+</div>
+<div>
+<label class="lbl">Min Profit</label>
+<select class="inp" id="sel-profit">
+<option value="2">£2+ / unit</option><option value="3">£3+</option>
+<option value="5">£5+</option><option value="10">£10+</option>
+</select>
+</div>
+</div>
+<div id="scan-status" style="background:#080b0f;border:1px solid #22c55e33;border-radius:10px;padding:12px 16px;margin-bottom:20px">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<div>
+<p id="scan-title" style="font-size:13px;font-weight:600;color:#22c55e">🟢 Ready to Scan</p>
+<p id="scan-sub" style="font-size:11px;color:#374151;margin-top:3px">Connected and ready</p>
+</div>
+<div id="scan-dot" style="width:10px;height:10px;border-radius:50%;background:#22c55e;box-shadow:0 0 8px #22c55e"></div>
+</div>
+</div>
+<button class="btn-p" onclick="runScan()">🚀 Start Scanning</button>
+</div>
+<button class="btn-g" onclick="showView('login')" style="margin-bottom:14px">← Back</button>
+</div>
+
+<!-- ═══ RESULTS ═══ -->
+
+<div id="v-results" class="section fade" style="display:none">
+<div id="log-box">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+<p style="font-size:10px;color:#374151;letter-spacing:2px;text-transform:uppercase">Scan Log</p>
+<span id="log-spin" style="display:none;font-size:13px" class="spin">⚙️</span>
+</div>
+<div id="log-lines"></div>
+<div id="prog-wrap" style="display:none">
+<div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+<p id="prog-pct" style="font-size:10px;color:#374151;margin-top:4px;text-align:right">0%</p>
+</div>
+</div>
+
+<div id="results-body" style="display:none">
+<div class="stat-grid">
+<div class="stat-box"><p id="st-scanned" style="font-size:17px;font-weight:700;color:#6b7280;font-family:'Space Grotesk',sans-serif">0</p><p style="font-size:10px;color:#374151;margin-top:2px">Scanned</p></div>
+<div class="stat-box"><p id="st-leads" style="font-size:17px;font-weight:700;color:#3b82f6;font-family:'Space Grotesk',sans-serif">0</p><p style="font-size:10px;color:#374151;margin-top:2px">Leads</p></div>
+<div class="stat-box"><p id="st-showing" style="font-size:17px;font-weight:700;color:#e2e8f0;font-family:'Space Grotesk',sans-serif">0</p><p style="font-size:10px;color:#374151;margin-top:2px">Showing</p></div>
+<div class="stat-box"><p id="st-avg" style="font-size:17px;font-weight:700;color:#22c55e;font-family:'Space Grotesk',sans-serif">0%</p><p style="font-size:10px;color:#374151;margin-top:2px">Avg Margin</p></div>
+</div>
+
+```
+<div class="filter-grid">
+<select class="inp" id="flt-margin" onchange="applyFilters()">
+<option value="20">20%+ margin</option><option value="25">25%+</option>
+<option value="30">30%+</option><option value="40">40%+</option>
+</select>
+<select class="inp" id="flt-profit" onchange="applyFilters()">
+<option value="2">£2+ profit</option><option value="3">£3+</option>
+<option value="5">£5+</option><option value="10">£10+</option>
+</select>
+<select class="inp" id="flt-cat" onchange="applyFilters()"><option value="All">All categories</option></select>
+<select class="inp" id="flt-sort" onchange="applyFilters()">
+<option value="margin">↓ Margin</option>
+<option value="profit">↓ Profit</option>
+<option value="roi">↓ ROI</option>
+</select>
+</div>
+<input class="inp" id="flt-search" placeholder="🔍 Search brand or product..." oninput="applyFilters()" style="margin-bottom:12px">
+
+<div class="tbl-hdr">
+<p style="font-size:9px;color:#374151;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin:0">PRODUCT</p>
+<p style="font-size:9px;color:#374151;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin:0">BUY</p>
+<p style="font-size:9px;color:#374151;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin:0">SELL</p>
+<p style="font-size:9px;color:#374151;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin:0">PROFIT</p>
+<p style="font-size:9px;color:#374151;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin:0">MARGIN</p>
+</div>
+<div style="border:1px solid #161b22;border-radius:0 0 10px 10px;overflow:hidden;margin-bottom:14px" id="leads-table"></div>
+
+<div style="display:flex;gap:8px;margin-bottom:14px">
+<button class="btn-p" onclick="runScan()" style="flex:1">🔄 Scan Again</button>
+<button class="btn-g" onclick="showView('scan')" style="width:auto;padding:13px 16px">⚙️</button>
+<button class="btn-g" onclick="logout()" style="width:auto;padding:13px 16px">↩</button>
+</div>
+<p style="font-size:10px;color:#1f2937;text-align:center;line-height:1.8">
+⚠️ Prices estimated at buy × 2.5. Always verify on Amazon before buying.<br>
+Add Keepa key for real Amazon prices.
+</p>
+```
+
+</div>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────
+const S = {
+backendUrl: "", token: "", userName: "",
+keepaKey: "", isDemo: false,
+allLeads: [], filtered: [], expandedGtin: null,
+};
+
+const DEMO = [
+{gtin:"5000386005168",name:"Wella Professionals Color Touch 60ml",brand:"Wella Professionals",category:"Hair Coloring",price:4.20,inventory:240},
+{gtin:"8004608228882",name:"Wella SP Luxe Oil Elixir 100ml",brand:"Wella SP",category:"Hair Oil & Serum",price:14.50,inventory:55},
+{gtin:"5410076411719",name:"Milk_Shake Moisture Plus Shampoo 300ml",brand:"Milk_Shake",category:"Shampoo",price:6.80,inventory:180},
+{gtin:"5410076411726",name:"Milk_Shake Moisture Plus Conditioner 300ml",brand:"Milk_Shake",category:"Conditioner",price:6.90,inventory:160},
+{gtin:"0309977991897",name:"Revlon ColorSilk Hair Dye 71",brand:"Revlon",category:"Hair Dye",price:2.85,inventory:420},
+{gtin:"5000386180862",name:"Wella Koleston Perfect 60ml 7/1",brand:"Wella Professionals",category:"Hair Dye",price:5.10,inventory:300},
+{gtin:"5410076405121",name:"Milk_Shake Active Milk Shampoo 300ml",brand:"Milk_Shake",category:"Shampoo",price:7.20,inventory:95},
+{gtin:"0309977280085",name:"Revlon Professional Equave Detangling Shampoo",brand:"Revlon Professional",category:"Shampoo",price:8.40,inventory:130},
+{gtin:"8004608117575",name:"Wella Professionals Fusio-Dose Booster 10ml",brand:"Wella Professionals",category:"Hair Care",price:9.80,inventory:75},
+{gtin:"5410076508586",name:"Milk_Shake Leave-In Conditioning Spray 150ml",brand:"Milk_Shake",category:"Leave-In Conditioner",price:8.10,inventory:88},
+{gtin:"0309977993723",name:"Revlon Flex Conditioner Dry & Damaged 400ml",brand:"Revlon",category:"Conditioner",price:3.10,inventory:510},
+{gtin:"8004608278382",name:"Wella Eimi Thermal Image Heat Protect 150ml",brand:"Wella",category:"Hair Styling",price:7.60,inventory:190},
+{gtin:"5410076229376",name:"Milk_Shake Integrity Nourishing Shampoo 300ml",brand:"Milk_Shake",category:"Shampoo",price:7.50,inventory:110},
+{gtin:"0309977280122",name:"Revlon Professional Style Masters Hairspray",brand:"Revlon Professional",category:"Hairspray",price:9.20,inventory:145},
+{gtin:"8004608117582",name:"Wella Professionals Nutri-Enrich Wonder Balm",brand:"Wella Professionals",category:"Hair Masks",price:16.80,inventory:42},
+{gtin:"5410076521882",name:"Milk_Shake Colour Maintainer Shampoo 300ml",brand:"Milk_Shake",category:"Shampoo",price:7.10,inventory:200},
+{gtin:"0309977993730",name:"Revlon Flex Shampoo Normal Hair 400ml",brand:"Revlon",category:"Shampoo",price:2.95,inventory:620},
+{gtin:"8004608253700",name:"Wella Professionals Oil Reflections Luminous",brand:"Wella Professionals",category:"Hair Oil & Serum",price:22.40,inventory:28},
+{gtin:"5410076539788",name:"Milk_Shake Lifestyling Strong Gel 500ml",brand:"Milk_Shake",category:"Hair Styling",price:9.60,inventory:70},
+{gtin:"0309977280146",name:"Revlon Professional Equave Hydro Detangling",brand:"Revlon Professional",category:"Conditioner",price:11.20,inventory:88},
+{gtin:"8004608196533",name:"Wella Eimi Extra Volume Mousse 300ml",brand:"Wella",category:"Hair Styling",price:8.90,inventory:165},
+{gtin:"5410076290412",name:"Milk_Shake Natural Care Active Yoghurt Mask",brand:"Milk_Shake",category:"Hair Masks",price:11.40,inventory:60},
+{gtin:"0309977993747",name:"Revlon Flex Keratin Conditioner 400ml",brand:"Revlon",category:"Conditioner",price:3.20,inventory:480},
+{gtin:"8004608273806",name:"Wella Professionals Brilliance Shampoo 250ml",brand:"Wella Professionals",category:"Shampoo",price:12.60,inventory:95},
+{gtin:"5410076380817",name:"Milk_Shake Sweet Camomile Shampoo 300ml",brand:"Milk_Shake",category:"Shampoo",price:7.30,inventory:140},
+];
+
+// ── Profit calc ─────────────────────────────────────────────
+function calcProfit(buy) {
+const sell=+(buy*2.5).toFixed(2);
+const ref=+(sell*0.15).toFixed(2);
+const ful=buy<3?2.70:buy<8?3.23:buy<15?3.55:buy<30?4.10:buy<60?5.20:6.80;
+const stor=0.20;
+const fba=+(ref+ful+stor).toFixed(2);
+const vat=+(sell*(0.20/1.20)-buy*(0.20/1.20)).toFixed(2);
+const profit=+(sell-buy-fba-vat).toFixed(2);
+const margin=+(profit/sell*100).toFixed(1);
+const roi=+(profit/buy*100).toFixed(1);
+return{sell,ref,ful,stor,fba,vat,profit,margin,roi};
+}
+
+const gbp=n=>`£${parseFloat(n).toFixed(2)}`;
+const mc=m=>m>=40?"#22c55e":m>=30?"#f59e0b":"#f97316";
+const mbg=m=>m>=40?"rgba(34,197,94,0.1)":m>=30?"rgba(245,158,11,0.1)":"rgba(249,115,22,0.1)";
+const rl=m=>m>=40?"🔥 HOT":m>=30?"⚡ GOOD":"✅ OK";
+
+// ── Views ───────────────────────────────────────────────────
+function showView(v) {
+["login","scan","results"].forEach((id,i)=>{
+document.getElementById(`v-${id}`).style.display=id===v?"block":"none";
+const steps=["login","scan","results"];
+const ci=steps.indexOf(v);
+const el=document.getElementById(`s${i}`);
+const done=i<ci,active=i===ci;
+el.style.background=active?"#1e3a5f":done?"#0a1628":"#080b0f";
+el.style.border=`1px solid ${active?"#3b82f6":done?"#1d4ed855":"#111827"}`;
+el.style.color=active?"#93c5fd":done?"#3b82f6":"#374151";
+el.style.fontWeight=active?"600":"400";
+el.textContent=(done?"✓ ":"")+["🔐 Login","⚙️ Settings","📊 Leads"][i];
+});
+window.scrollTo(0,0);
+}
+
+function togglePass(){
+const i=document.getElementById("inp-pass");
+const b=document.getElementById("pass-eye");
+i.type=i.type==="password"?"text":"password";
+b.textContent=i.type==="password"?"👁️":"🙈";
+}
+
+// ── Login ───────────────────────────────────────────────────
+async function doLogin(){
+const url=document.getElementById("backend-url").value.trim().replace(/\/$/,"");
+const email=document.getElementById("inp-email").value.trim();
+const pass=document.getElementById("inp-pass").value;
+const keepa=document.getElementById("inp-keepa").value.trim();
+const btn=document.getElementById("btn-login");
+const errBox=document.getElementById("login-err");
+const errMsg=document.getElementById("login-err-msg");
+if(!url||!email||!pass){errMsg.textContent="⚠️ Please fill in all fields";errBox.style.display="block";return;}
+errBox.style.display="none";
+btn.disabled=true;btn.innerHTML='<span class="spin">⚙️</span> Connecting...';
+try{
+const r=await fetch(`${url}/api/login`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,password:pass})});
+const d=await r.json();
+if(!r.ok)throw new Error(d.error||`Error ${r.status}`);
+S.backendUrl=url;S.token=d.accessToken;S.userName=d.user?.firstName||email.split("@")[0];
+S.keepaKey=keepa;S.isDemo=false;
+setUserChip(false);
+btn.innerHTML="✅ Connected!";
+setTimeout(()=>{btn.disabled=false;btn.innerHTML="🔐 Connect to Qogita";showView("scan");},600);
+setScanStatus(false,S.userName,keepa);
+}catch(e){
+btn.disabled=false;btn.innerHTML="🔐 Connect to Qogita";
+errMsg.textContent="⚠️ "+e.message;errBox.style.display="block";
+}
+}
+
+function demoMode(){
+S.isDemo=true;S.userName="Demo";
+setUserChip(true);
+setScanStatus(true);
+showView("scan");
+}
+
+function logout(){
+S.token="";S.isDemo=false;S.userName="";S.allLeads=[];
+document.getElementById("user-chip").style.display="none";
+document.getElementById("log-lines").innerHTML="";
+document.getElementById("results-body").style.display="none";
+showView("login");
+}
+
+function setUserChip(demo){
+const c=document.getElementById("user-chip");
+c.style.display="block";
+c.style.color=demo?"#f59e0b":"#22c55e";
+c.textContent=demo?"🎭 Demo":"● "+S.userName;
+}
+
+function setScanStatus(demo,name,keepa){
+document.getElementById("scan-title").textContent=demo?"🎭 Demo Mode":"🟢 Qogita Connected";
+document.getElementById("scan-title").style.color=demo?"#f59e0b":"#22c55e";
+document.getElementById("scan-sub").textContent=demo?"25 sample products ready":`Logged in as ${name}${keepa?" · Keepa enabled ✓":" · Add Keepa for real prices"}`;
+document.getElementById("scan-status").style.borderColor=demo?"#f59e0b33":"#22c55e33";
+document.getElementById("scan-dot").style.background=demo?"#f59e0b":"#22c55e";
+document.getElementById("scan-dot").style.boxShadow=`0 0 8px ${demo?"#f59e0b":"#22c55e"}`;
+}
+
+// ── Logging ─────────────────────────────────────────────────
+function addLog(msg,type="info"){
+const c=type==="success"?"#22c55e":type==="warn"?"#f59e0b":"#4b5563";
+const ts=new Date().toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+const d=document.createElement("div");
+d.style.cssText="display:flex;gap:8px;margin-bottom:4px";
+d.innerHTML=`<span style="font-size:10px;color:#1f2937;white-space:nowrap;min-width:52px">${ts}</span><span style="font-size:11px;color:${c}">${msg}</span>`;
+document.getElementById("log-lines").appendChild(d);
+document.getElementById("log-box").scrollTop=9999;
+}
+
+function setProgress(p){
+document.getElementById("prog-fill").style.width=p+"%";
+document.getElementById("prog-pct").textContent=p+"%";
+}
+
+// ── Scan ────────────────────────────────────────────────────
+async function runScan(){
+S.allLeads=[];S.expandedGtin=null;
+document.getElementById("log-lines").innerHTML="";
+document.getElementById("results-body").style.display="none";
+document.getElementById("log-spin").style.display="inline-block";
+document.getElementById("prog-wrap").style.display="block";
+setProgress(0);
+showView("results");
+
+const minM=parseFloat(document.getElementById("sel-margin").value);
+const minP=parseFloat(document.getElementById("sel-profit").value);
+let products=[];let apiOk=false;
+
+if(!S.isDemo&&S.token&&S.backendUrl){
+addLog("🔌 Qogita API connected","success");
+addLog("📦 Fetching live catalog...","info");
+try{
+const r=await fetch(`${S.backendUrl}/api/scan`,{method:"POST",headers:{"Authorization":`Bearer ${S.token}`,"Content-Type":"application/json"}});
+const d=await r.json();
+if(r.ok&&d.products?.length){
+products=d.products;apiOk=true;
+addLog(`📊 ${d.total} products loaded`,"success");
+Object.entries(d.byCategory||{}).forEach(([cat,n])=>addLog(` ✓ ${cat}: ${n}`,"success"));
+}else{addLog("⚠️ No products returned from API","warn");}
+}catch(e){addLog("⚠️ Backend error: "+e.message,"warn");}
+setProgress(55);
+}
+
+if(!apiOk){
+addLog(S.isDemo?"🎭 Loading demo products...":"⚠️ Falling back to demo data","warn");
+await new Promise(r=>setTimeout(r,400));
+products=DEMO;
+addLog(`📦 ${products.length} sample products loaded`,"info");
+}
+
+setProgress(65);
+addLog("⚙️ Calculating FBA fees & VAT per unit...","info");
+await new Promise(r=>setTimeout(r,300));
+
+if(S.keepaKey&&S.backendUrl&&!S.isDemo){
+addLog("📈 Fetching Keepa prices...","info");
+try{
+const gtins=products.map(p=>p.gtin).filter(Boolean);
+const r=await fetch(`${S.backendUrl}/api/keepa`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({gtins,keepaKey:S.keepaKey})});
+const d=await r.json();
+if(r.ok&&d.prices){
+let updated=0;
+products=products.map(p=>{
+if(d.prices[p.gtin]){updated++;return{...p,keepaPrice:d.prices[p.gtin]};}
+return p;
+});
+addLog(`✅ Keepa: ${updated} real prices applied`,"success");
+}
+}catch(e){addLog("⚠️ Keepa error: "+e.message,"warn");}
+setProgress(80);
+}
+
+const leads=products.filter(p=>p.price>0).map(p=>{
+const c=calcProfit(p.keepaPrice||p.price);
+if(p.keepaPrice){
+const sell=p.keepaPrice;
+const ref=+(sell*0.15).toFixed(2);
+const ful=p.price<3?2.70:p.price<8?3.23:p.price<15?3.55:p.price<30?4.10:p.price<60?5.20:6.80;
+const fba=+(ref+ful+0.20).toFixed(2);
+const vat=+(sell*(0.20/1.20)-p.price*(0.20/1.20)).toFixed(2);
+const profit=+(sell-p.price-fba-vat).toFixed(2);
+return{...p,...c,sell,profit,margin:+(profit/sell*100).toFixed(1),roi:+(profit/p.price*100).toFixed(1),realPrice:true};
+}
+return{...p,...c};
+}).filter(l=>l.profit>=minP&&l.margin>=minM).sort((a,b)=>b.margin-a.margin);
+
+setProgress(100);
+addLog(`🎯 Done! ${leads.length} profitable leads found.`,"success");
+document.getElementById("log-spin").style.display="none";
+S.allLeads=leads;
+
+// Populate cat filter
+const cats=["All",...Array.from(new Set(leads.map(l=>l.category))).sort()];
+const cs=document.getElementById("flt-cat");
+cs.innerHTML=cats.map(c=>`<option>${c}</option>`).join("");
+
+const avg=leads.length?(leads.reduce((a,l)=>a+l.margin,0)/leads.length).toFixed(1):0;
+document.getElementById("st-scanned").textContent=products.length.toLocaleString();
+document.getElementById("st-leads").textContent=leads.length.toLocaleString();
+document.getElementById("st-avg").textContent=avg+"%";
+document.getElementById("results-body").style.display="block";
+applyFilters();
+}
+
+// ── Filters ─────────────────────────────────────────────────
+function applyFilters(){
+const minM=parseFloat(document.getElementById("flt-margin").value||20);
+const minP=parseFloat(document.getElementById("flt-profit").value||2);
+const cat=document.getElementById("flt-cat").value||"All";
+const sort=document.getElementById("flt-sort").value||"margin";
+const srch=(document.getElementById("flt-search").value||"").toLowerCase();
+let res=S.allLeads.filter(l=>l.margin>=minM&&l.profit>=minP&&(cat==="All"||l.category===cat)&&(!srch||l.name.toLowerCase().includes(srch)||l.brand.toLowerCase().includes(srch)));
+if(sort==="profit")res.sort((a,b)=>b.profit-a.profit);
+else if(sort==="roi")res.sort((a,b)=>b.roi-a.roi);
+else res.sort((a,b)=>b.margin-a.margin);
+S.filtered=res;
+document.getElementById("st-showing").textContent=res.length.toLocaleString();
+renderTable(res);
+}
+
+function renderTable(leads){
+const t=document.getElementById("leads-table");
+if(!leads.length){t.innerHTML='<div style="padding:28px;text-align:center;color:#374151;font-size:13px">No leads match your filters</div>';return;}
+t.innerHTML=leads.map((l,i)=>buildRow(l,i)).join("");
+}
+
+function buildRow(l,i){
+const bg=i%2===0?"#080b0f":"#0a0d14";
+const open=S.expandedGtin===l.gtin;
+return`<div class="tbl-row row" style="background:${bg}" onclick="toggleRow('${l.gtin}')">
+<div style="min-width:0">
+<span style="font-size:10px;font-weight:700;color:${mc(l.margin)}">${rl(l.margin)}${l.realPrice?' <span style="font-size:9px;background:rgba(59,130,246,0.15);color:#60a5fa;padding:1px 5px;border-radius:4px">KEEPA</span>':''}</span>
+<p style="font-size:11px;font-weight:500;color:#e2e8f0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:2px 0 0">${l.name}</p>
+<p style="font-size:10px;color:#4b5563;margin:1px 0 0">${l.brand}</p>
+</div>
+<p style="font-size:11px;color:#9ca3af;margin:0">${gbp(l.price)}</p>
+<p style="font-size:11px;color:#e2e8f0;margin:0">${gbp(l.sell)}</p>
+<p style="font-size:12px;font-weight:700;color:#22c55e;margin:0">${gbp(l.profit)}</p>
+<div style="background:${mbg(l.margin)};border-radius:6px;padding:3px 0;text-align:center">
+<p style="font-size:12px;font-weight:700;color:${mc(l.margin)};margin:0">${l.margin}%</p>
+</div>
+</div>${open?buildExpanded(l):""}`;
+}
+
+function buildExpanded(l){
+const qLink=`https://api.qogita.com/variants/link/${l.gtin}/`;
+const aLink=`https://www.amazon.co.uk/s?k=${encodeURIComponent(l.gtin)}`;
+const sLink=`https://selleramp.com/sas/search?q=${encodeURIComponent(l.name)}`;
+const rows=[
+{lb:"Buy (1 unit)",v:gbp(l.price),c:"#9ca3af"},
+{lb:"Est. Sell",v:gbp(l.sell),c:"#e2e8f0"},
+{lb:"Referral 15%",v:gbp(l.ref),c:"#f97316"},
+{lb:"FBA Fulfil",v:gbp(l.ful),c:"#f97316"},
+{lb:"Net VAT 20%",v:gbp(l.vat),c:"#fbbf24"},
+{lb:"NET PROFIT",v:gbp(l.profit),c:"#22c55e",b:true},
+{lb:"MARGIN",v:`${l.margin}%`,c:mc(l.margin),b:true},
+{lb:"ROI",v:`${l.roi}%`,c:"#8b5cf6",b:true},
+{lb:"Stock",v:l.inventory,c:"#6b7280"},
+];
+return`<div style="background:#0c1018;border-bottom:1px solid #161b22;padding:14px">
+<p style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:13px;margin-bottom:12px;color:#e2e8f0">${l.name}</p>
+<div class="detail-grid">${rows.map(r=>`<div class="detail-box"><p style="font-size:9px;color:#374151;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">${r.lb}</p><p style="font-size:${r.b?16:13}px;font-weight:${r.b?700:500};color:${r.c};font-family:${r.b?"'Space Grotesk',sans-serif":"inherit"}">${r.v}</p></div>`).join("")}</div>
+<div style="display:flex;flex-wrap:wrap">
+<a href="${qLink}" target="_blank" class="link-btn" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff">🛒 Buy on Qogita</a>
+<a href="${aLink}" target="_blank" class="link-btn" style="background:#1f2937;color:#e2e8f0">🔍 Amazon UK</a>
+<a href="${sLink}" target="_blank" class="link-btn" style="background:#0f1f0f;border:1px solid #22c55e44;color:#22c55e">📈 Check SAS</a>
+</div>
+<p style="font-size:10px;color:#1f2937;margin-top:8px">GTIN: ${l.gtin}</p>
+</div>`;
+}
+
+function toggleRow(gtin){
+S.expandedGtin=S.expandedGtin===gtin?null:gtin;
+renderTable(S.filtered);
+}
+</script>
+
+</body>
+</html>
