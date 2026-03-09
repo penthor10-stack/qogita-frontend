@@ -175,7 +175,7 @@ input,select,button{outline:none;font-family:inherit;-webkit-appearance:none}
 
 <script>
 var CATS = ["Hair","Body","Face","Makeup","Fragrance","Shampoo","Conditioner"];
-var BRANDS = ["wella","wella-professionals","revlon","milk-shake"];
+var BRANDS = ["Wella","Wella Professionals","Revlon","Milk_shake"];
 var ST = {url:"",token:"",user:"",keepa:"",demo:false,all:[],fil:[],exp:null,hasKeepa:false};
 
 // Build brand checkboxes
@@ -365,37 +365,56 @@ async function runScan(){
     addLog("📦 Scanning "+selCats.length+" categories...","info");
     var done=0;
     var selBrands=BRANDS.filter(function(b){return brandState[b];});
-    var scanList=[];
     if(selBrands.length>0){
-      selBrands.forEach(function(b){scanList.push({type:"brand",value:b});});
-    } else {
-      selCats.forEach(function(c){scanList.push({type:"cat",value:c});});
-    }
-    for(var i=0;i<scanList.length;i++){
-      var item=scanList[i];
+      addLog("🔍 Scanning brands: "+selBrands.join(", "),"info");
       try{
-        addLog("  Fetching "+item.value+"...","info");
-        var body=item.type==="brand"?{brands:[item.value]}:{category:item.value,brands:[]};
         var r=await fetch(ST.url+"/api/scan",{
           method:"POST",
           headers:{"Content-Type":"application/json","Authorization":"Bearer "+ST.token},
-          body:JSON.stringify(Object.assign({},body,{keepaKey:ST.keepa}))
+          body:JSON.stringify({brands:selBrands,keepaKey:ST.keepa})
         });
         var d=await r.json();
         if(r.ok&&d.products&&d.products.length>0){
           products=products.concat(d.products);
-          addLog("  ✓ "+item.value+": "+d.products.length+" products","success");
+          addLog("✓ Found "+d.products.length+" products","success");
           apiOk=true;
         }else if(!r.ok){
-          addLog("  ✗ "+item.value+": error "+r.status,"warn");
+          addLog("✗ Brand scan error "+r.status,"warn");
         }else{
-          addLog("  ⚠ "+item.value+": 0 products returned","warn");
+          addLog("⚠ No products found for these brands","warn");
         }
       }catch(e){
-        addLog("  ✗ "+item.value+": "+e.message,"warn");
+        addLog("✗ "+e.message,"warn");
       }
-      done++;
-      setP(Math.round(done/scanList.length*60));
+      setP(60);
+    } else {
+      var scanList=[];
+      selCats.forEach(function(c){scanList.push(c);});
+      for(var i=0;i<scanList.length;i++){
+        var cat=scanList[i];
+        try{
+          addLog("  Fetching "+cat+"...","info");
+          var r=await fetch(ST.url+"/api/scan",{
+            method:"POST",
+            headers:{"Content-Type":"application/json","Authorization":"Bearer "+ST.token},
+            body:JSON.stringify({category:cat,brands:[],keepaKey:ST.keepa})
+          });
+          var d=await r.json();
+          if(r.ok&&d.products&&d.products.length>0){
+            products=products.concat(d.products);
+            addLog("  ✓ "+cat+": "+d.products.length+" products","success");
+            apiOk=true;
+          }else if(!r.ok){
+            addLog("  ✗ "+cat+": error "+r.status,"warn");
+          }else{
+            addLog("  ⚠ "+cat+": 0 products","warn");
+          }
+        }catch(e){
+          addLog("  ✗ "+cat+": "+e.message,"warn");
+        }
+        done++;
+        setP(Math.round(done/scanList.length*60));
+      }
     }
     if(products.length>0){
       var seen={};
