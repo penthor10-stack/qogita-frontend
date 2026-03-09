@@ -351,29 +351,36 @@ async function runScan(){
     addLog("🔌 Connected to Qogita","success");
     addLog("📦 Scanning "+selCats.length+" categories...","info");
     var done=0;
-    for(var i=0;i<selCats.length;i++){
-      var cat=selCats[i];
+    var selBrands=BRANDS.filter(function(b){return brandState[b];});
+    var scanList=[];
+    if(selBrands.length>0){
+      selBrands.forEach(function(b){scanList.push({type:"brand",value:b});});
+    } else {
+      selCats.forEach(function(c){scanList.push({type:"cat",value:c});});
+    }
+    for(var i=0;i<scanList.length;i++){
+      var item=scanList[i];
       try{
-        addLog("  Fetching "+cat+"...","info");
-        var selBrands=BRANDS.filter(function(b){return brandState[b];});
+        addLog("  Fetching "+item.value+"...","info");
+        var body=item.type==="brand"?{brands:[item.value]}:{category:item.value,brands:[]};
         var r=await fetch(ST.url+"/api/scan",{
           method:"POST",
-          headers:{"Content-Type":"application/json","Authorization":"Bearer "+ST.token,"X-Category":cat},
-          body:JSON.stringify({category:cat,brands:selBrands})
+          headers:{"Content-Type":"application/json","Authorization":"Bearer "+ST.token},
+          body:JSON.stringify(body)
         });
         var d=await r.json();
         if(r.ok&&d.products&&d.products.length>0){
           products=products.concat(d.products);
-          addLog("  ✓ "+cat+": "+d.products.length+" products","success");
+          addLog("  ✓ "+item.value+": "+d.products.length+" products","success");
           apiOk=true;
         }else{
-          addLog("  ⚠ "+cat+": no products","warn");
+          addLog("  ⚠ "+item.value+": no products","warn");
         }
       }catch(e){
-        addLog("  ✗ "+cat+": "+e.message,"warn");
+        addLog("  ✗ "+item.value+": "+e.message,"warn");
       }
       done++;
-      setP(Math.round(done/selCats.length*60));
+      setP(Math.round(done/scanList.length*60));
     }
     if(products.length>0){
       var seen={};
