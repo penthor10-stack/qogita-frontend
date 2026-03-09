@@ -315,21 +315,21 @@ function setP(p){
 }
 
 var DEMO=[
-  {gtin:"5000386005168",name:"Wella Professionals Color Touch 60ml",brand:"Wella Professionals",category:"hair-care",price:4.20,inventory:240},
-  {gtin:"8004608228882",name:"Wella SP Luxe Oil Elixir 100ml",brand:"Wella SP",category:"hair-care",price:14.50,inventory:55},
-  {gtin:"5410076411719",name:"Milk_Shake Moisture Plus Shampoo 300ml",brand:"Milk_Shake",category:"shampoo",price:6.80,inventory:180},
-  {gtin:"5410076411726",name:"Milk_Shake Moisture Plus Conditioner 300ml",brand:"Milk_Shake",category:"conditioner",price:6.90,inventory:160},
-  {gtin:"0309977991897",name:"Revlon ColorSilk Hair Dye 71",brand:"Revlon",category:"hair-colour",price:2.85,inventory:420},
-  {gtin:"5000386180862",name:"Wella Koleston Perfect 60ml 7/1",brand:"Wella Professionals",category:"hair-colour",price:5.10,inventory:300},
-  {gtin:"5410076405121",name:"Milk_Shake Active Milk Shampoo 300ml",brand:"Milk_Shake",category:"shampoo",price:7.20,inventory:95},
-  {gtin:"0309977280085",name:"Revlon Professional Equave Detangling Shampoo",brand:"Revlon Professional",category:"shampoo",price:8.40,inventory:130},
-  {gtin:"8004608117575",name:"Wella Professionals Fusio-Dose Booster 10ml",brand:"Wella Professionals",category:"hair-care",price:9.80,inventory:75},
-  {gtin:"5410076508586",name:"Milk_Shake Leave-In Conditioning Spray 150ml",brand:"Milk_Shake",category:"hair-care",price:8.10,inventory:88},
-  {gtin:"0309977993723",name:"Revlon Flex Conditioner Dry 400ml",brand:"Revlon",category:"conditioner",price:3.10,inventory:510},
-  {gtin:"8004608278382",name:"Wella Eimi Thermal Image Heat Protect 150ml",brand:"Wella",category:"hair-styling",price:7.60,inventory:190},
-  {gtin:"5410076229376",name:"Milk_Shake Integrity Nourishing Shampoo 300ml",brand:"Milk_Shake",category:"shampoo",price:7.50,inventory:110},
-  {gtin:"0309977280122",name:"Revlon Professional Style Masters Hairspray",brand:"Revlon Professional",category:"hair-styling",price:9.20,inventory:145},
-  {gtin:"8004608117582",name:"Wella Professionals Nutri-Enrich Wonder Balm",brand:"Wella Professionals",category:"hair-care",price:16.80,inventory:42},
+  {gtin:"5000386005168",name:"Wella Professionals Color Touch 60ml",brand:"Wella Professionals",category:"hair-care",buyPrice:4.20,inventory:240},
+  {gtin:"8004608228882",name:"Wella SP Luxe Oil Elixir 100ml",brand:"Wella SP",category:"hair-care",buyPrice:14.50,inventory:55},
+  {gtin:"5410076411719",name:"Milk_Shake Moisture Plus Shampoo 300ml",brand:"Milk_Shake",category:"shampoo",buyPrice:6.80,inventory:180},
+  {gtin:"5410076411726",name:"Milk_Shake Moisture Plus Conditioner 300ml",brand:"Milk_Shake",category:"conditioner",buyPrice:6.90,inventory:160},
+  {gtin:"0309977991897",name:"Revlon ColorSilk Hair Dye 71",brand:"Revlon",category:"hair-colour",buyPrice:2.85,inventory:420},
+  {gtin:"5000386180862",name:"Wella Koleston Perfect 60ml 7/1",brand:"Wella Professionals",category:"hair-colour",buyPrice:5.10,inventory:300},
+  {gtin:"5410076405121",name:"Milk_Shake Active Milk Shampoo 300ml",brand:"Milk_Shake",category:"shampoo",buyPrice:7.20,inventory:95},
+  {gtin:"0309977280085",name:"Revlon Professional Equave Detangling Shampoo",brand:"Revlon Professional",category:"shampoo",buyPrice:8.40,inventory:130},
+  {gtin:"8004608117575",name:"Wella Professionals Fusio-Dose Booster 10ml",brand:"Wella Professionals",category:"hair-care",buyPrice:9.80,inventory:75},
+  {gtin:"5410076508586",name:"Milk_Shake Leave-In Conditioning Spray 150ml",brand:"Milk_Shake",category:"hair-care",buyPrice:8.10,inventory:88},
+  {gtin:"0309977993723",name:"Revlon Flex Conditioner Dry 400ml",brand:"Revlon",category:"conditioner",buyPrice:3.10,inventory:510},
+  {gtin:"8004608278382",name:"Wella Eimi Thermal Image Heat Protect 150ml",brand:"Wella",category:"hair-styling",buyPrice:7.60,inventory:190},
+  {gtin:"5410076229376",name:"Milk_Shake Integrity Nourishing Shampoo 300ml",brand:"Milk_Shake",category:"shampoo",buyPrice:7.50,inventory:110},
+  {gtin:"0309977280122",name:"Revlon Professional Style Masters Hairspray",brand:"Revlon Professional",category:"hair-styling",buyPrice:9.20,inventory:145},
+  {gtin:"8004608117582",name:"Wella Professionals Nutri-Enrich Wonder Balm",brand:"Wella Professionals",category:"hair-care",buyPrice:16.80,inventory:42},
 ];
 
 async function runScan(){
@@ -400,8 +400,8 @@ async function runScan(){
   addLog("⚙️ Calculating FBA fees and VAT...","info");
   await new Promise(function(r){setTimeout(r,300);});
 
-  var leads=products.filter(function(p){return p.buyPrice>0||p.price>0;}).map(function(p){
-    var buy=p.buyPrice||p.price||0;
+  var leads=products.filter(function(p){return (p.buyPrice||p.price||0)>0;}).map(function(p){
+    var buy=parseFloat(p.buyPrice||p.price||0);
     var c=calcP(buy,p.amazonPrice);
     return Object.assign({},p,{price:buy},c);
   }).filter(function(l){return l.profit>=minP&&l.margin>=minM;}).sort(function(a,b){return b.margin-a.margin;});
