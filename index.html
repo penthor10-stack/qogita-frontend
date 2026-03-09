@@ -92,14 +92,14 @@ input,select,button{outline:none;font-family:inherit;-webkit-appearance:none}
       <div>
         <label class="lbl">Min Margin</label>
         <select class="inp" id="smargin">
-          <option value="20">20%+</option><option value="25">25%+</option>
+          <option value="10">10%+</option><option value="15">15%+</option><option value="20">20%+</option><option value="25">25%+</option>
           <option value="30">30%+</option><option value="40">40%+</option>
         </select>
       </div>
       <div>
         <label class="lbl">Min Profit</label>
         <select class="inp" id="sprofit">
-          <option value="2">£2+ / unit</option><option value="3">£3+</option>
+          <option value="1">£1+ / unit</option><option value="2">£2+ / unit</option><option value="3">£3+</option>
           <option value="5">£5+</option><option value="10">£10+</option>
         </select>
       </div>
@@ -148,8 +148,8 @@ input,select,button{outline:none;font-family:inherit;-webkit-appearance:none}
       <div class="sbox"><p id="stavg" style="font-size:17px;font-weight:700;color:#22c55e;font-family:'Space Grotesk',sans-serif">0%</p><p style="font-size:10px;color:#374151;margin-top:2px">Avg Margin</p></div>
     </div>
     <div class="fgrid">
-      <select class="inp" id="fmargin" onchange="applyF()"><option value="20">20%+</option><option value="25">25%+</option><option value="30">30%+</option><option value="40">40%+</option></select>
-      <select class="inp" id="fprofit" onchange="applyF()"><option value="2">£2+</option><option value="3">£3+</option><option value="5">£5+</option><option value="10">£10+</option></select>
+      <select class="inp" id="fmargin" onchange="applyF()"><option value="10">10%+</option><option value="15">15%+</option><option value="20">20%+</option><option value="25">25%+</option><option value="30">30%+</option><option value="40">40%+</option></select>
+      <select class="inp" id="fprofit" onchange="applyF()"><option value="1">£1+</option><option value="2">£2+</option><option value="3">£3+</option><option value="5">£5+</option><option value="10">£10+</option></select>
       <select class="inp" id="fcat" onchange="applyF()"><option value="All">All categories</option></select>
       <select class="inp" id="fsort" onchange="applyF()"><option value="margin">Best Margin</option><option value="profit">Best Profit</option><option value="roi">Best ROI</option></select>
     </div>
