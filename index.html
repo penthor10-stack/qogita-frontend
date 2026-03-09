@@ -175,7 +175,7 @@ input,select,button{outline:none;font-family:inherit;-webkit-appearance:none}
 <script>
 var CATS = ["Hair","Body","Face","Makeup","Fragrance","Shampoo","Conditioner"];
 var BRANDS = ["wella","wella-professionals","revlon","milk-shake"];
-var ST = {url:"",token:"",user:"",keepa:"",demo:false,all:[],fil:[],exp:null};
+var ST = {url:"",token:"",user:"",keepa:"",demo:false,all:[],fil:[],exp:null,hasKeepa:false};
 
 // Build brand checkboxes
 var brandState = {};
@@ -210,8 +210,8 @@ function renderCats(){
 }
 renderCats();
 
-function calcP(buy){
-  var sell = +(buy*2.5).toFixed(2);
+function calcP(buy,amazonPrice){
+  var sell = amazonPrice&&amazonPrice>0?+amazonPrice.toFixed(2):+(buy*2.5).toFixed(2);
   var ref = +(sell*0.15).toFixed(2);
   var ful = buy<3?2.70:buy<8?3.23:buy<15?3.55:buy<30?4.10:buy<60?5.20:6.80;
   var stor = 0.20;
@@ -270,7 +270,7 @@ async function doLogin(){
     var r=await fetch(url+"/api/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:email,password:pass})});
     var d=await r.json();
     if(!r.ok)throw new Error(d.error||"Login failed");
-    ST.url=url;ST.token=d.accessToken;ST.user=d.user&&d.user.firstName?d.user.firstName:email.split("@")[0];ST.keepa=keepa;ST.demo=false;
+    ST.url=url;ST.token=d.accessToken;ST.user=d.user&&d.user.firstName?d.user.firstName:email.split("@")[0];ST.keepa=keepa;ST.hasKeepa=!!keepa;ST.demo=false;
     setChip(false);
     document.getElementById("stitle").textContent="🟢 Qogita Connected";
     document.getElementById("ssub").textContent="Logged in as "+ST.user;
@@ -366,7 +366,7 @@ async function runScan(){
         var r=await fetch(ST.url+"/api/scan",{
           method:"POST",
           headers:{"Content-Type":"application/json","Authorization":"Bearer "+ST.token},
-          body:JSON.stringify(body)
+          body:JSON.stringify(Object.assign({},body,{keepaKey:ST.keepa}))
         });
         var d=await r.json();
         if(r.ok&&d.products&&d.products.length>0){
@@ -400,9 +400,10 @@ async function runScan(){
   addLog("⚙️ Calculating FBA fees and VAT...","info");
   await new Promise(function(r){setTimeout(r,300);});
 
-  var leads=products.filter(function(p){return p.price>0;}).map(function(p){
-    var c=calcP(p.price);
-    return Object.assign({},p,c);
+  var leads=products.filter(function(p){return p.buyPrice>0||p.price>0;}).map(function(p){
+    var buy=p.buyPrice||p.price||0;
+    var c=calcP(buy,p.amazonPrice);
+    return Object.assign({},p,{price:buy},c);
   }).filter(function(l){return l.profit>=minP&&l.margin>=minM;}).sort(function(a,b){return b.margin-a.margin;});
 
   setP(100);
@@ -418,6 +419,8 @@ async function runScan(){
   document.getElementById("stscanned").textContent=products.length.toLocaleString();
   document.getElementById("stleads").textContent=leads.length.toLocaleString();
   document.getElementById("stavg").textContent=avg+"%";
+  var kpct=leads.filter(function(l){return l.hasRealPrice;}).length;
+  if(ST.hasKeepa&&kpct>0){addLog("📊 "+kpct+" products have real Amazon prices","success");}else if(!ST.hasKeepa){addLog("💡 Add Keepa key for real Amazon prices","warn");}
   document.getElementById("rbody").style.display="block";
   applyF();
 }
