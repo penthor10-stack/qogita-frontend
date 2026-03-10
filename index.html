@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 
 <html lang="en">
@@ -153,7 +152,8 @@ input,select,button{outline:none;font-family:inherit;-webkit-appearance:none}
       <select class="inp" id="fmargin" onchange="applyF()"><option value="10">10%+</option><option value="15">15%+</option><option value="20">20%+</option><option value="25">25%+</option><option value="30">30%+</option><option value="40">40%+</option></select>
       <select class="inp" id="fprofit" onchange="applyF()"><option value="1">£1+</option><option value="2">£2+</option><option value="3">£3+</option><option value="5">£5+</option><option value="10">£10+</option></select>
       <select class="inp" id="fcat" onchange="applyF()"><option value="All">All categories</option></select>
-      <select class="inp" id="fsort" onchange="applyF()"><option value="margin">Best Margin</option><option value="profit">Best Profit</option><option value="roi">Best ROI</option></select>
+      <select class="inp" id="fsort" onchange="applyF()"><option value="margin">Best Margin</option><option value="profit">Best Profit</option><option value="roi">Best ROI</option><option value="sales">Most Sales</option></select>
+      <select class="inp" id="fsales" onchange="applyF()" style="grid-column:span 2"><option value="0" selected>All sales/month</option><option value="10">10+ /month</option><option value="20">20+ /month</option><option value="50">50+ /month</option><option value="100">100+ /month</option></select>
     </div>
     <input class="inp" id="fsearch" placeholder="Search brand or product..." oninput="applyF()" style="margin-bottom:12px">
     <div class="thdr">
@@ -468,7 +468,7 @@ function applyF(){
   var srch=(document.getElementById("fsearch").value||"").toLowerCase();
   var minSales=parseFloat(document.getElementById("fsales").value||0);
   var res=ST.all.filter(function(l){
-    var salesOk=minSales===0||(l.monthlySales&&l.monthlySales>=minSales)||(minSales===0&&!l.monthlySales);
+    var salesOk=minSales===0||!l.monthlySales||(l.monthlySales&&l.monthlySales>=minSales);
     return l.margin>=minM&&l.profit>=minP&&(cat==="All"||l.category===cat)&&(!srch||l.name.toLowerCase().includes(srch)||l.brand.toLowerCase().includes(srch))&&salesOk;
   });
   if(sort==="profit")res.sort(function(a,b){return b.profit-a.profit;});
