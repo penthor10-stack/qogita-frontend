@@ -48,9 +48,10 @@ input,select,button{outline:none;font-family:inherit;-webkit-appearance:none}
   <h1 style="font-family:'Space Grotesk',sans-serif;font-size:23px;font-weight:700;letter-spacing:-0.5px">Qogita x Amazon UK</h1>
   <p style="font-size:11px;color:#374151;margin-top:3px">Live profit finder - Per unit - FBA fees - VAT 20%</p>
   <div style="display:flex;gap:6px;margin-top:14px">
-    <div class="step" id="s0" style="background:#1e3a5f;border:1px solid #3b82f6;color:#93c5fd;font-weight:600">Login</div>
-    <div class="step" id="s1" style="background:#080b0f;border:1px solid #111827;color:#374151">Settings</div>
-    <div class="step" id="s2" style="background:#080b0f;border:1px solid #111827;color:#374151">Leads</div>
+    <div class="step" id="s0" style="background:#1e3a5f;border:1px solid #3b82f6;color:#93c5fd;font-weight:600" onclick="goTo('login')">Login</div>
+    <div class="step" id="s1" style="background:#080b0f;border:1px solid #111827;color:#374151" onclick="goTo('scan')">Settings</div>
+    <div class="step" id="s2" style="background:#080b0f;border:1px solid #111827;color:#374151" onclick="goTo('results')">Leads</div>
+    <div class="step" id="s3" style="background:#080b0f;border:1px solid #111827;color:#374151" onclick="goTo('watchlist')">👁 Watch</div>
   </div>
 </div>
 
@@ -206,7 +207,7 @@ function isNew(gtin){
   if(!HISTORY[gtin])return true;
   var h=HISTORY[gtin];
   var scanGap=Date.now()-h.lastSeen;
-  return scanGap>600000;
+  return scanGap>300000;
 }
 
 function getPriceDrop(gtin){
@@ -291,6 +292,23 @@ var mc=function(m){return m>=40?"#22c55e":m>=30?"#f59e0b":"#f97316";};
 var rl=function(m){return m>=40?"🔥 HOT":m>=30?"⚡ GOOD":"✅ OK";};
 
 function goTo(v){
+  ["login","scan","results","watchlist"].forEach(function(id,i){
+    var el=document.getElementById("v"+id);
+    if(el)el.style.display=id===v?"block":"none";
+  });
+  var tabs=["s0","s1","s2","s3"];
+  var views=["login","scan","results","watchlist"];
+  var vi=views.indexOf(v);
+  tabs.forEach(function(tid,i){
+    var el=document.getElementById(tid);
+    if(!el)return;
+    el.style.background=i===vi?"#1e3a5f":"#080b0f";
+    el.style.border="1px solid "+(i===vi?"#3b82f6":"#111827");
+    el.style.color=i===vi?"#93c5fd":"#374151";
+    el.style.fontWeight=i===vi?"600":"400";
+  });
+  if(v==="watchlist")renderWatchlist();
+  window.scrollTo(0,0);
   if(v==='scan'){
     var ks=document.getElementById('keepastatus');
     if(ks){
@@ -303,17 +321,7 @@ function goTo(v){
       }
     }
   }
-  ["login","scan","results"].forEach(function(id,i){
-    document.getElementById("v"+id).style.display=id===v?"block":"none";
-    var el=document.getElementById("s"+i);
-    var vi=["login","scan","results"].indexOf(v);
-    el.style.background=i===vi?"#1e3a5f":i<vi?"#0a1628":"#080b0f";
-    el.style.border="1px solid "+(i===vi?"#3b82f6":i<vi?"#1d4ed855":"#111827");
-    el.style.color=i===vi?"#93c5fd":i<vi?"#3b82f6":"#374151";
-    el.style.fontWeight=i===vi?"600":"400";
-    el.textContent=(i<vi?"✓ ":"")+["🔐 Login","⚙️ Settings","📊 Leads"][i];
-  });
-  window.scrollTo(0,0);
+
 }
 
 function togglePass(){
@@ -521,6 +529,7 @@ async function runScan(){
   var kpct=leads.filter(function(l){return l.hasRealPrice;}).length;
   if(ST.hasKeepa&&kpct>0){addLog("📊 "+kpct+" products have real Amazon prices","success");}else if(!ST.hasKeepa){addLog("💡 Add Keepa key for real Amazon prices","warn");}
   document.getElementById("rbody").style.display="block";
+  saveHistory(ST.all);
   applyF();
 }
 
@@ -584,7 +593,7 @@ function renderT(leads){
         +'<a href="'+alink+'" target="_blank" style="background:#1f2937;color:#e2e8f0;border-radius:9px;padding:9px 14px;font-size:12px;font-weight:600;text-decoration:none">🔍 Amazon UK</a>'
         +'<a href="'+slink+'" target="_blank" style="background:#0f1f0f;border:1px solid #22c55e44;color:#22c55e;border-radius:9px;padding:9px 14px;font-size:12px;font-weight:600;text-decoration:none">📈 SAS</a>'
         +'</div>'
-        +'<p style="font-size:10px;color:#1f2937">GTIN: '+l.gtin+'</p>'+'<button onclick="event.stopPropagation();dismissLead(\'"+l.gtin+"\')" style="margin-top:10px;background:#1f0a0a;border:1px solid #ef444433;border-radius:8px;padding:8px 14px;color:#f87171;font-size:12px;cursor:pointer;width:100%">✕ Dismiss this lead</button>'
+        +'<p style="font-size:10px;color:#1f2937">GTIN: '+l.gtin+'</p>'+'<button data-gtin="'+l.gtin+'" onclick="event.stopPropagation();DISMISSED[this.getAttribute(&quot;data-gtin&quot;)]=true;try{localStorage.setItem(&quot;qs_dismissed&quot;,JSON.stringify(DISMISSED));}catch(e){}applyF();" style="margin-top:10px;background:#1f0a0a;border:1px solid #ef444433;border-radius:8px;padding:8px 14px;color:#f87171;font-size:12px;cursor:pointer;width:100%">&#x2715; Dismiss this lead</button>'
         +'</div>';
     }
     return row;
@@ -600,7 +609,121 @@ function toggleR(gtin){
   ST.exp=ST.exp===gtin?null:gtin;
   renderT(ST.fil);
 }
+
+// ── WATCHLIST ──
+var WATCHLIST={};
+try{var _w=localStorage.getItem("qs_watchlist");if(_w)WATCHLIST=JSON.parse(_w);}catch(e){}
+
+function saveWatchlist(){try{localStorage.setItem("qs_watchlist",JSON.stringify(WATCHLIST));}catch(e){}}
+
+function addToWatchlist(){
+  var url=document.getElementById("iwatchurl").value.trim();
+  var note=document.getElementById("iwatchnote").value.trim();
+  if(!url){showWatchErr("Please enter a Qogita product URL");return;}
+  var m=url.match(/products\/([^/]+)/);
+  if(!m){showWatchErr("Invalid Qogita URL - copy it from the product page");return;}
+  var qid=m[1];
+  if(WATCHLIST[qid]){showWatchErr("Already in watchlist");return;}
+  document.getElementById("btnwatch").textContent="Looking up product...";
+  document.getElementById("btnwatch").disabled=true;
+  fetch(ST.url+"/api/lookup",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({token:ST.token,qid:qid})
+  })
+  .then(function(r){return r.json();})
+  .then(function(d){
+    if(d.error){showWatchErr(d.error);resetWatchBtn();return;}
+    WATCHLIST[qid]={qid:qid,name:d.name,brand:d.brand,gtin:d.gtin,price:d.price,note:note,addedAt:Date.now(),lastChecked:Date.now(),priceHistory:[{price:d.price,ts:Date.now()}],dropped:false};
+    saveWatchlist();
+    document.getElementById("iwatchurl").value="";
+    document.getElementById("iwatchnote").value="";
+    resetWatchBtn();
+    renderWatchlist();
+  })
+  .catch(function(){showWatchErr("Failed to look up product");resetWatchBtn();});
+}
+
+function resetWatchBtn(){
+  document.getElementById("btnwatch").textContent="+ Add to Watchlist";
+  document.getElementById("btnwatch").disabled=false;
+}
+
+function showWatchErr(msg){
+  document.getElementById("watcherr").style.display="block";
+  document.getElementById("watcherrmsg").textContent=msg;
+  setTimeout(function(){document.getElementById("watcherr").style.display="none";},4000);
+}
+
+function removeFromWatchlist(qid){
+  delete WATCHLIST[qid];
+  saveWatchlist();
+  renderWatchlist();
+}
+
+function checkWatchlistNow(){
+  var keys=Object.keys(WATCHLIST);
+  if(!keys.length){showWatchErr("No items in watchlist");return;}
+  var btn=document.getElementById("btnwatchcheck");
+  btn.textContent="Checking prices...";
+  btn.disabled=true;
+  fetch(ST.url+"/api/watchcheck",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({token:ST.token,items:keys})
+  })
+  .then(function(r){return r.json();})
+  .then(function(d){
+    (d.results||[]).forEach(function(r){
+      if(WATCHLIST[r.qid]){
+        var old=WATCHLIST[r.qid].price;
+        if(r.price<old){WATCHLIST[r.qid].dropped=true;WATCHLIST[r.qid].prevPrice=old;WATCHLIST[r.qid].priceHistory.push({price:r.price,ts:Date.now()});}
+        WATCHLIST[r.qid].price=r.price;
+        WATCHLIST[r.qid].lastChecked=Date.now();
+      }
+    });
+    saveWatchlist();
+    renderWatchlist();
+    btn.textContent="🔄 Check Prices Now";
+    btn.disabled=false;
+  })
+  .catch(function(){btn.textContent="🔄 Check Prices Now";btn.disabled=false;});
+}
+
+function renderWatchlist(){
+  var el=document.getElementById("watchlist_items");
+  if(!el)return;
+  var keys=Object.keys(WATCHLIST);
+  if(!keys.length){el.innerHTML='<div class="card" style="text-align:center;color:#4b5563;font-size:13px;padding:24px">No items yet — paste a Qogita URL above</div>';return;}
+  el.innerHTML=keys.map(function(qid){
+    var w=WATCHLIST[qid];
+    var drop=w.dropped?'<span style="font-size:10px;font-weight:700;color:#fff;background:#22c55e;border-radius:4px;padding:2px 7px;margin-left:6px">&#x1F4C9; PRICE DROP</span>':'<span style="font-size:10px;color:#6b7280;margin-left:6px">Watching</span>';
+    var prev=w.dropped&&w.prevPrice?'<span style="font-size:10px;color:#6b7280;text-decoration:line-through;margin-right:5px">&#163;'+w.prevPrice.toFixed(2)+'</span>':'';
+    var chk=w.lastChecked?new Date(w.lastChecked).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'Never';
+    return '<div class="card" style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div style="flex:1;min-width:0"><p style="font-size:12px;font-weight:600;color:#e2e8f0;margin:0 0 2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+w.name+'</p><p style="font-size:10px;color:#4b5563;margin:0 0 6px">'+w.brand+(w.note?' &middot; '+w.note:'')+'</p><div style="display:flex;align-items:center">'+prev+'<span style="font-size:15px;font-weight:700;color:#3b82f6">&#163;'+w.price.toFixed(2)+'</span>'+drop+'</div><p style="font-size:9px;color:#374151;margin:4px 0 0">Last checked: '+chk+'</p></div><button onclick="removeFromWatchlist(\''+qid+'\')" style="background:none;border:none;color:#4b5563;font-size:18px;cursor:pointer;padding:0 0 0 10px">&#x2715;</button></div></div>';
+  }).join("");
+  var hasDrops=keys.some(function(q){return WATCHLIST[q].dropped;});
+  var s3=document.getElementById("s3");
+  if(s3)s3.textContent=hasDrops?"&#x1F441; Watch &#x1F534;":"&#x1F441; Watch";
+}
 </script>
 
+<div id="vwatchlist" class="sec fade" style="display:none">
+  <div class="card">
+    <p style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;margin-bottom:4px">👁 Watchlist</p>
+    <p style="font-size:11px;color:#4b5563;margin-bottom:18px">Paste a Qogita product URL to track price drops</p>
+    <label class="lbl">Qogita Product URL</label>
+    <input class="inp" id="iwatchurl" placeholder="https://www.qogita.com/products/..." style="margin-bottom:10px">
+    <label class="lbl">Notes (optional)</label>
+    <input class="inp" id="iwatchnote" placeholder="e.g. Need for ungating Wella" style="margin-bottom:14px">
+    <button class="btn" onclick="addToWatchlist()" id="btnwatch">+ Add to Watchlist</button>
+  </div>
+  <div id="watcherr" style="display:none;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:11px 14px;margin-bottom:14px">
+    <p id="watcherrmsg" style="font-size:12px;color:#f87171"></p>
+  </div>
+  <div id="watchlist_items"></div>
+  <button class="btng" id="btnwatchcheck" onclick="checkWatchlistNow()" style="margin-bottom:8px">🔄 Check Prices Now</button>
+  <button class="btng" onclick="goTo('results')" style="margin-bottom:14px">← Back to Leads</button>
+</div>
 </body>
 </html>
