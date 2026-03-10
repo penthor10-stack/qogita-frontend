@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 
 <html lang="en">
@@ -175,7 +176,7 @@ input,select,button{outline:none;font-family:inherit;-webkit-appearance:none}
 
 <script>
 var CATS = ["Hair","Body","Face","Makeup","Fragrance","Shampoo","Conditioner"];
-var BRANDS = ["Wella","Wella Professionals","Revlon","Milk_shake"];
+var BRANDS = ["Wella","Wella Professionals","Revlon","Milk_Shake"];
 var ST = {url:"",token:"",user:"",keepa:"",demo:false,all:[],fil:[],exp:null,hasKeepa:false};
 
 // Build brand checkboxes
@@ -465,11 +466,14 @@ function applyF(){
   var cat=document.getElementById("fcat").value||"All";
   var sort=document.getElementById("fsort").value||"margin";
   var srch=(document.getElementById("fsearch").value||"").toLowerCase();
+  var minSales=parseFloat(document.getElementById("fsales").value||0);
   var res=ST.all.filter(function(l){
-    return l.margin>=minM&&l.profit>=minP&&(cat==="All"||l.category===cat)&&(!srch||l.name.toLowerCase().includes(srch)||l.brand.toLowerCase().includes(srch));
+    var salesOk=minSales===0||(l.monthlySales&&l.monthlySales>=minSales)||(minSales===0&&!l.monthlySales);
+    return l.margin>=minM&&l.profit>=minP&&(cat==="All"||l.category===cat)&&(!srch||l.name.toLowerCase().includes(srch)||l.brand.toLowerCase().includes(srch))&&salesOk;
   });
   if(sort==="profit")res.sort(function(a,b){return b.profit-a.profit;});
   else if(sort==="roi")res.sort(function(a,b){return b.roi-a.roi;});
+  else if(sort==="sales")res.sort(function(a,b){return (b.monthlySales||0)-(a.monthlySales||0);});
   else res.sort(function(a,b){return b.margin-a.margin;});
   ST.fil=res;
   document.getElementById("stshowing").textContent=res.length.toLocaleString();
@@ -485,7 +489,7 @@ function renderT(leads){
     var row='<div class="trow row" style="background:'+bg+'" onclick="toggleR(\''+l.gtin+'\')">'
       +'<div style="min-width:0"><span style="font-size:10px;font-weight:700;color:'+mc(l.margin)+'">'+rl(l.margin)+'</span>'
       +'<p style="font-size:11px;font-weight:500;color:#e2e8f0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:2px 0 0">'+l.name+'</p>'
-      +'<p style="font-size:10px;color:#4b5563;margin:1px 0 0">'+l.brand+'</p></div>'
+      +'<p style="font-size:10px;color:#4b5563;margin:1px 0 0">'+l.brand+(l.monthlySales?'<span style="margin-left:6px;font-size:9px;color:#8b5cf6">'+l.monthlySales+'/mo</span>':"")+"</p></div>"
       +'<p style="font-size:11px;color:#9ca3af;margin:0">'+gbp(l.price)+'</p>'
       +'<p style="font-size:11px;color:#e2e8f0;margin:0">'+gbp(l.sell)+'</p>'
       +'<p style="font-size:12px;font-weight:700;color:#22c55e;margin:0">'+gbp(l.profit)+'</p>'
@@ -507,6 +511,7 @@ function renderT(leads){
         +dbox("MARGIN",l.margin+"%",mc(l.margin),true)
         +dbox("ROI",l.roi+"%","#8b5cf6",true)
         +dbox("Stock",l.inventory,"#6b7280",false)
+        +dbox("Est. Sales/mo",l.monthlySales?l.monthlySales+"x":"Unknown","#8b5cf6",false)
         +'</div>'
         +'<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">'
         +'<a href="'+qlink+'" target="_blank" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;border-radius:9px;padding:9px 14px;font-size:12px;font-weight:600;text-decoration:none">🛒 Buy on Qogita</a>'
