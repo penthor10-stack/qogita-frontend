@@ -152,7 +152,7 @@ input,select,button{outline:none;font-family:inherit;-webkit-appearance:none}
       <select class="inp" id="fmargin" onchange="applyF()"><option value="10">10%+</option><option value="15">15%+</option><option value="20">20%+</option><option value="25">25%+</option><option value="30">30%+</option><option value="40">40%+</option></select>
       <select class="inp" id="fprofit" onchange="applyF()"><option value="1">£1+</option><option value="2">£2+</option><option value="3">£3+</option><option value="5">£5+</option><option value="10">£10+</option></select>
       <select class="inp" id="fcat" onchange="applyF()"><option value="All">All categories</option></select>
-      <select class="inp" id="fsort" onchange="applyF()"><option value="margin">Best Margin</option><option value="profit">Best Profit</option><option value="roi">Best ROI</option><option value="sales">Most Sales</option></select>
+      <select class="inp" id="fsort" onchange="applyF()"><option value="margin" selected>Best Margin</option><option value="profit">Best Profit</option><option value="roi">Best ROI</option><option value="sales">Most Sales</option></select>
       <select class="inp" id="fsales" onchange="applyF()" style="grid-column:span 2"><option value="0" selected>All sales/month</option><option value="10">10+ /month</option><option value="20">20+ /month</option><option value="50">50+ /month</option><option value="100">100+ /month</option></select>
     </div>
     <input class="inp" id="fsearch" placeholder="Search brand or product..." oninput="applyF()" style="margin-bottom:12px">
@@ -548,6 +548,8 @@ function renderT(leads){
   var t=document.getElementById("tbl");
   if(!leads.length){t.innerHTML='<div style="padding:28px;text-align:center;color:#374151;font-size:13px">No leads match your filters</div>';return;}
   t.innerHTML=leads.map(function(l,i){
+    var isNewLead=isNew(l.gtin);
+    var dropPct=getPriceDrop(l.gtin);
     var bg=i%2===0?"#080b0f":"#0a0d14";
     var open=ST.exp===l.gtin;
     var row='<div class="trow row" style="background:'+bg+'" onclick="toggleR(\''+l.gtin+'\')">'
